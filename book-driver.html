@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Driver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .banner {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .banner .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .banner button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .banner button:hover {
+            background-color: #777;
+            transform: scale(1.05);
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 80px;
+        }
+        .container h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .container p {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .container input[type="text"],
+        .container input[type="date"],
+        .container input[type="time"],
+        .container select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .container .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .input-wrapper input[type="date"],
+        .input-wrapper input[type="time"],
+        .input-wrapper select {
+            padding-right: 40px; /* Add padding to account for clear icon */
+        }
+        .clear-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+            font-size: 20px;
+        }
+        .clear-icon:hover {
+            color: #333;
+        }
+        .clear-icon::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -25px;
+            right: 0;
+            background-color: #333;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .clear-icon:hover::after {
+            opacity: 1;
+        }
+        .container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .container button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <div>Driveroncall</div>
+        <div class="buttons">
+            <button id="helpButton">Help</button>
+            <button id="loginButton">Login</button>
+            <button id="signupButton">Signup</button>
+        </div>
+    </div>
+    <div class="welcome-note" id="welcomeNote"></div>
+    <div class="container">
+        <h2>Book a Driver</h2>
+        <form id="bookingForm">
+            <div class="input-wrapper">
+                <input type="text" id="pickupLocation" name="pickupLocation" placeholder="Pickup Location" required>
+                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('pickupLocation')">&times;</span>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="dropoffLocation" name="dropoffLocation" placeholder="Drop-off Location" required>
+                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('dropoffLocation')">&times;</span>
+            </div>
+            <div class="input-wrapper">
+                <input type="date" id="date" name="date" required>
+                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('date')">&times;</span>
+            </div>
+            <div class="input-wrapper">
+                <input type="time" id="time" name="time" required>
+                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('time')">&times;</span>
+            </div>
+            <div class="input-wrapper">
+                <select id="carType" name="carType" required>
+                    <option value="">Select Car Type</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="suv">SUV</option>
+                    <option value="minivan">Minivan</option>
+                </select>
+                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('carType')">&times;</span>
+            </div>
+            <button type="submit">Book Now</button>
+            <button type="button" id="currentLocationButton">Use Current Location</button>
+        </form>
+    </div>
+
+    <script>
+        // Assuming the user's name is stored in localStorage after login
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            document.getElementById('welcomeNote').innerText = `Welcome, ${userName}!`;
+        }
+
+        document.getElementById('bookingForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const bookingDetails = {
+                pickupLocation: document.getElementById('pickupLocation').value,
+                dropoffLocation: document.getElementById('dropoffLocation').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                carType: document.getElementById('carType').value,
+                userName: userName
+            };
+
+            fetch('https://api.example.com/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookingDetails)
+            }).then(response => {
+                if (response.ok) {
+                    alert('Booking successful!');
+                } else {
+                    alert('Booking failed!');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Booking failed!');
+            });
+        });
+
+        function clearInput(id) {
+            document.getElementById(id).value = '';
+        }
+
+        document.getElementById('currentLocationButton').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    document.getElementById('pickupLocation').value = `Lat: ${lat}, Lon: ${lon}`;
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        });
+    </script>
+</body>
+</html>
