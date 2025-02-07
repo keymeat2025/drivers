@@ -1,9 +1,17 @@
 name: Save Registration Details
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      phone:
+        description: 'Phone Number'
+        required: true
+      pin:
+        description: 'PIN'
+        required: true
+      userType:
+        description: 'User Type'
+        required: true
 
 jobs:
   save-registration:
@@ -16,11 +24,11 @@ jobs:
       - name: Save registration details
         run: |
           echo "phone,pin,userType" > registration.csv
-          echo "$phone,$pin,$userType" >> registration.csv
-
-      - name: Commit and push changes
-        run: |
+          echo "${{ github.event.inputs.phone }},${{ github.event.inputs.pin }},${{ github.event.inputs.userType }}" >> registration.csv
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          git commit -am "Add new registration details"
+          git add registration.csv
+          git commit -m "Add new registration details"
           git push
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
