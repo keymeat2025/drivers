@@ -1,0 +1,26 @@
+name: Save Registration Details
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  save-registration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Save registration details
+        run: |
+          echo "phone,pin,userType" > registration.csv
+          echo "$phone,$pin,$userType" >> registration.csv
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git commit -am "Add new registration details"
+          git push
