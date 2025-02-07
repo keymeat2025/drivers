@@ -130,7 +130,7 @@
             fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/save-registration.yml/dispatches', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `token ${process.env.GH_PAT}`,
+                    'Authorization': 'token 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',
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -149,6 +149,5 @@
             });
         });
     </script>
-    
 </body>
 </html>
