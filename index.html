@@ -128,24 +128,25 @@
             userType: userType
         };
 
+      
         fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/save-registration.yml/dispatches', {
-            method: 'POST',
-            headers: {
-                'Authorization': `token YOUR_GITHUB_TOKEN`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ref: 'main',
-                inputs: registrationDetails
-            })
-        }).then(response => {
-            if (response.ok) {
-                alert('Registration successful!');
-            } else {
-                alert('Registration failed!');
-            }
-        });
-    });
+    method: 'POST',
+    headers: {
+        'Authorization': `token ${process.env.GH_PAT}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        ref: 'main',
+        inputs: registrationDetails
+    })
+}).then(response => {
+    if (response.ok) {
+        alert('Registration successful!');
+    } else {
+        alert('Registration failed!');
+    }
+});
+            
 </script>
 </body>
 </html>
