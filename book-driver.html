@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Driver</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,6 +47,12 @@
             background-color: #777;
             transform: scale(1.05);
         }
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-top: 80px;
+        }
         .container {
             background-color: white;
             padding: 20px;
@@ -55,7 +62,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 80px;
         }
         .container h2 {
             text-align: center;
@@ -85,7 +91,7 @@
         .input-wrapper input[type="date"],
         .input-wrapper input[type="time"],
         .input-wrapper select {
-            padding-right: 40px; /* Add padding to account for clear icon */
+            padding-right: 40px;
         }
         .clear-icon {
             position: absolute;
@@ -132,6 +138,48 @@
             background-color: #218838;
             transform: scale(1.05);
         }
+        .autocomplete-suggestions {
+            border: 1px solid #ccc;
+            background: #fff;
+            position: absolute;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+        }
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .autocomplete-suggestion:hover {
+            background-color: #f0f0f0;
+        }
+        #map {
+            height: 400px;
+            width: 400px;
+            margin-left: 20px;
+            border-radius: 8px;
+        }
+        #distance-time {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .trip-details {
+            margin-top: 20px;
+        }
+        .destination-banner {
+            position: absolute;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transform: translate(-50%, -100%);
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -144,45 +192,89 @@
         </div>
     </div>
     <div class="welcome-note" id="welcomeNote"></div>
-    <div class="container">
-        <h2>Book a Driver</h2>
-        <form id="bookingForm">
-            <div class="input-wrapper">
-                <input type="text" id="pickupLocation" name="pickupLocation" placeholder="Pickup Location" required>
-                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('pickupLocation')">&times;</span>
-            </div>
-            <div class="input-wrapper">
-                <input type="text" id="dropoffLocation" name="dropoffLocation" placeholder="Drop-off Location" required>
-                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('dropoffLocation')">&times;</span>
-            </div>
-            <div class="input-wrapper">
-                <input type="date" id="date" name="date" required>
-                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('date')">&times;</span>
-            </div>
-            <div class="input-wrapper">
-                <input type="time" id="time" name="time" required>
-                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('time')">&times;</span>
-            </div>
-            <div class="input-wrapper">
-                <select id="carType" name="carType" required>
-                    <option value="">Select Car Type</option>
-                    <option value="sedan">Sedan</option>
-                    <option value="suv">SUV</option>
-                    <option value="minivan">Minivan</option>
-                </select>
-                <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('carType')">&times;</span>
-            </div>
-            <button type="submit">Book Now</button>
-            <button type="button" id="currentLocationButton">Use Current Location</button>
-        </form>
+    <div class="main-container">
+        <div class="container">
+            <h2>Book a Driver</h2>
+            <form id="bookingForm">
+                <div class="input-wrapper">
+                    <input type="text" id="pickupLocation" name="pickupLocation" placeholder="Pickup Location" required>
+                    <div id="pickupSuggestions" class="autocomplete-suggestions"></div>
+                    <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('pickupLocation')">&times;</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="text" id="dropoffLocation" name="dropoffLocation" placeholder="Drop-off Location" required>
+                    <div id="dropoffSuggestions" class="autocomplete-suggestions"></div>
+                    <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('dropoffLocation')">&times;</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="date" id="date" name="date" required>
+                    <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('date')">&times;</span>
+                </div>
+                <div class="input-wrapper">
+                    <input type="time" id="time" name="time" required>
+                    <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('time')">&times;</span>
+                </div>
+                <div class="input-wrapper">
+                    <select id="carType" name="carType" required>
+                        <option value="">Select Car Type</option>
+                        <option value="sedan">Sedan</option>
+                        <option value="suv">SUV</option>
+                        <option value="minivan">Minivan</option>
+                    </select>
+                    <span class="clear-icon" data-tooltip="Clear" onclick="clearInput('carType')">&times;</span>
+                </div>
+                <div class="trip-details" id="tripDetails"></div>
+                <button type="button" id="seePricesButton">See Prices</button>
+                <button type="submit" id="bookNowButton" style="display:none">Book Now</button>
+                <div class="error" id="errorMessage"></div>
+            </form>
+        </div>
+        <div id="map"></div>
     </div>
 
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        // Assuming the user's name is stored in localStorage after login
         const userName = localStorage.getItem('userName');
         if (userName) {
             document.getElementById('welcomeNote').innerText = `Welcome, ${userName}!`;
         }
+
+        document.getElementById('seePricesButton').addEventListener('click', function() {
+            const pickupLocation = document.getElementById('pickupLocation').value;
+            const dropoffLocation = document.getElementById('dropoffLocation').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const carType = document.getElementById('carType').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (!pickupLocation || !dropoffLocation || !date || !time || !carType) {
+                errorMessage.innerText = "All fields are required.";
+                return;
+            }
+
+            if (pickupLocation === dropoffLocation) {
+                errorMessage.innerText = "Pickup and drop-off locations must be different.";
+                return;
+            }
+
+            errorMessage.innerText = '';
+
+            const tripDetails = document.getElementById('tripDetails');
+            tripDetails.innerHTML = `
+                <p><strong>Pickup Location:</strong> ${pickupLocation}</p>
+                <p><strong>Drop-off Location:</strong> ${dropoffLocation}</p>
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Time:</strong> ${time}</p>
+                <p><strong>Car Type:</strong> ${carType}</p>
+                <p id="distanceTimeDetails"></p>
+            `;
+
+            if (pickupMarker && dropoffMarker) {
+                calculateRoute();
+            }
+
+            document.getElementById('bookNowButton').style.display = 'block';
+        });
 
         document.getElementById('bookingForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -218,16 +310,170 @@
             document.getElementById(id).value = '';
         }
 
-        document.getElementById('currentLocationButton').addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    document.getElementById('pickupLocation').value = `Lat: ${lat}, Lon: ${lon}`;
-                });
-            } else {
-                alert('Geolocation is not supported by this browser.');
+        async function fetchLocationSuggestions(input) {
+            const response = await fetch(`https://us1.locationiq.com/v1/search.php?key=pk.3ff92f87d4bd491b6a78884f21390cf7&q=${input}&format=json`);
+            const data = await response.json();
+            return data;
+        }
+
+        async function getAddress(lat, lon) {
+            const response = await fetch(`https://us1.locationiq.com/v1/reverse.php?key=pk.3ff92f87d4bd491b6a78884f21390cf7&lat=${lat}&lon=${lon}&format=json`);
+            const data = await response.json();
+            return data.display_name;
+        }
+
+        function initializeAutocomplete() {
+            const pickupLocation = document.getElementById('pickupLocation');
+            const dropoffLocation = document.getElementById('dropoffLocation');
+            const pickupSuggestionsContainer = document.getElementById('pickupSuggestions');
+            const dropoffSuggestionsContainer = document.getElementById('dropoffSuggestions');
+
+            pickupLocation.addEventListener('input', async function() {
+                const input = pickupLocation.value;
+                if (input.length > 2) {
+                    const suggestions = await fetchLocationSuggestions(input);
+                    pickupSuggestionsContainer.innerHTML = '';
+                    suggestions.forEach(suggestion => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'autocomplete-suggestion';
+                        suggestionItem.innerText = suggestion.display_name;
+                        suggestionItem.addEventListener('click', () => {
+                            pickupLocation.value = suggestion.display_name;
+                            pickupSuggestionsContainer.innerHTML = '';
+                            const lat = suggestion.lat;
+                            const lon = suggestion.lon;
+                            updateMap('pickupLocation', lat, lon);
+                        });
+                        pickupSuggestionsContainer.appendChild(suggestionItem);
+                    });
+                } else {
+                    pickupSuggestionsContainer.innerHTML = '';
+                }
+            });
+            
+            dropoffLocation.addEventListener('input', async function() {
+                const input = dropoffLocation.value;
+                if (input.length > 2) {
+                    const suggestions = await fetchLocationSuggestions(input);
+                    dropoffSuggestionsContainer.innerHTML = '';
+                    suggestions.forEach(suggestion => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'autocomplete-suggestion';
+                        suggestionItem.innerText = suggestion.display_name;
+                        suggestionItem.addEventListener('click', () => {
+                            dropoffLocation.value = suggestion.display_name;
+                            dropoffSuggestionsContainer.innerHTML = '';
+                            const lat = suggestion.lat;
+                            const lon = suggestion.lon;
+                            updateMap('dropoffLocation', lat, lon);
+                        });
+                        dropoffSuggestionsContainer.appendChild(suggestionItem);
+                    });
+                } else {
+                    dropoffSuggestionsContainer.innerHTML = '';
+                }
+            });
+        }
+
+        function initializeMap() {
+            const map = L.map('map').setView([51.505, -0.09], 13);
+
+            const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+
+            const satelliteLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.opentopomap.org/copyright">OpenTopoMap</a>'
+            });
+
+            const baseMaps = {
+                "Streets": streetLayer,
+                "Satellite": satelliteLayer
+            };
+
+            streetLayer.addTo(map);
+            L.control.layers(baseMaps).addTo(map);
+
+            let pickupMarker;
+            let dropoffMarker;
+            let routePolyline;
+            let destinationBanner;
+
+            map.on('click', async function(e) {
+                const { lat, lng } = e.latlng;
+                const address = await getAddress(lat, lng);
+                if (document.activeElement.id === 'pickupLocation') {
+                    if (pickupMarker) {
+                        map.removeLayer(pickupMarker);
+                    }
+                    pickupMarker = L.marker([lat, lng]).addTo(map);
+                    document.getElementById('pickupLocation').value = address;
+                } else if (document.activeElement.id === 'dropoffLocation') {
+                    if (dropoffMarker) {
+                        map.removeLayer(dropoffMarker);
+                    }
+                    dropoffMarker = L.marker([lat, lng]).addTo(map);
+                    document.getElementById('dropoffLocation').value = address;
+                }
+                calculateRoute();
+            });
+
+            function updateMap(inputId, lat, lon) {
+                map.setView([lat, lon], 13);
+                if (inputId === 'pickupLocation') {
+                    if (pickupMarker) {
+                        map.removeLayer(pickupMarker);
+                    }
+                    pickupMarker = L.marker([lat, lon]).addTo(map);
+                } else if (inputId === 'dropoffLocation') {
+                    if (dropoffMarker) {
+                        map.removeLayer(dropoffMarker);
+                    }
+                    dropoffMarker = L.marker([lat, lon]).addTo(map);
+                }
+                calculateRoute();
             }
+
+            async function calculateRoute() {
+                if (pickupMarker && dropoffMarker) {
+                    const pickupLatLng = pickupMarker.getLatLng();
+                    const dropoffLatLng = dropoffMarker.getLatLng();
+                    const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLatLng.lng},${pickupLatLng.lat};${dropoffLatLng.lng},${dropoffLatLng.lat}?overview=full&geometries=geojson`);
+                    const data = await response.json();
+                    const route = data.routes[0];
+
+                    if (routePolyline) {
+                        map.removeLayer(routePolyline);
+                    }
+
+                    routePolyline = L.geoJSON(route.geometry).addTo(map);
+                    const distance = (route.distance / 1000).toFixed(2);
+                    const duration = route.duration;
+                    const hours = Math.floor(duration / 3600);
+                    const minutes = Math.floor((duration % 3600) / 60);
+                    document.getElementById('distanceTimeDetails').innerText = `Distance: ${distance} km, Duration: ${hours} hrs ${minutes} mins`;
+
+                    if (destinationBanner) {
+                        map.removeLayer(destinationBanner);
+                    }
+                    destinationBanner = L.divIcon({
+                        className: 'destination-banner',
+                        html: `<b>Distance:</b> ${distance} km<br><b>Time:</b> ${hours} hrs ${minutes} mins`
+                    });
+                    dropoffMarker.bindTooltip(destinationBanner).openTooltip();
+
+                    // Adjust zoom level based on distance
+                    const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+
+            return updateMap;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAutocomplete();
+            updateMap = initializeMap();
         });
     </script>
 </body>
