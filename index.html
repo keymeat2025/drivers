@@ -104,6 +104,7 @@
         <form id="registrationForm">
             <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
             <input type="password" id="pin" name="pin" placeholder="PIN" required>
+            <input type="password" id="reEnterPin" name="reEnterPin" placeholder="Re-enter PIN" required>
             <select id="userType" name="userType" required>
                 <option value="">Select User Type</option>
                 <option value="carowner">Carowner</option>
@@ -119,7 +120,13 @@
 
             const phone = document.getElementById('phone').value;
             const pin = document.getElementById('pin').value;
+            const reEnterPin = document.getElementById('reEnterPin').value;
             const userType = document.getElementById('userType').value;
+
+            if (pin !== reEnterPin) {
+                alert('PIN and Re-enter PIN do not match.');
+                return;
+            }
 
             const registrationDetails = {
                 phone: phone,
