@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Drivers</title>
+    <style>
+        .available-drivers {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="available-drivers" id="availableDrivers"></div>
+
+    <script>
+        async function fetchAvailableDrivers(startLocation) {
+            const response = await fetch(`/api/drivers?startLocation=${startLocation}`);
+            const drivers = await response.json();
+            const driversContainer = document.getElementById('availableDrivers');
+            driversContainer.innerHTML = '<h3>Available Drivers:</h3>';
+            drivers.forEach(driver => {
+                const driverElement = document.createElement('p');
+                driverElement.innerText = `Name: ${driver.name}, Location: ${driver.location}`;
+                driversContainer.appendChild(driverElement);
+            });
+        }
+
+        // Example call to fetch available drivers
+        fetchAvailableDrivers('Location A');
+    </script>
+</body>
+</html>
