@@ -418,18 +418,20 @@
                 calculateRoute();
             });
 
-            function updateMap(inputId, lat, lon) {
+            async function updateMap(inputId, lat, lon) {
                 map.setView([lat, lon], 13);
                 if (inputId === 'pickupLocation') {
                     if (pickupMarker) {
                         map.removeLayer(pickupMarker);
                     }
                     pickupMarker = L.marker([lat, lon]).addTo(map);
+                    document.getElementById('pickupLocation').value = await getAddress(lat, lon); // Update input field
                 } else if (inputId === 'dropoffLocation') {
                     if (dropoffMarker) {
                         map.removeLayer(dropoffMarker);
                     }
                     dropoffMarker = L.marker([lat, lon]).addTo(map);
+                    document.getElementById('dropoffLocation').value = await getAddress(lat, lon); // Update input field
                 }
                 calculateRoute();
             }
