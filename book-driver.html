@@ -180,10 +180,6 @@
             transform: translate(-50%, -100%);
             white-space: nowrap;
         }
-        .available-drivers {
-            margin-top: 20px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -232,7 +228,6 @@
                 <button type="submit" id="bookNowButton" style="display:none">Book Now</button>
                 <div class="error" id="errorMessage"></div>
             </form>
-            <div class="available-drivers" id="availableDrivers"></div>
         </div>
         <div id="map"></div>
     </div>
@@ -279,7 +274,6 @@
             }
 
             document.getElementById('bookNowButton').style.display = 'block';
-            fetchAvailableDrivers(pickupLocation);
         });
 
         document.getElementById('bookingForm').addEventListener('submit', function(event) {
@@ -381,18 +375,6 @@
             });
         }
 
-        async function fetchAvailableDrivers(startLocation) {
-            const response = await fetch(`/api/drivers?startLocation=${startLocation}`);
-            const drivers = await response.json();
-            const driversContainer = document.getElementById('availableDrivers');
-            driversContainer.innerHTML = '<h3>Available Drivers:</h3>';
-            drivers.forEach(driver => {
-                const driverElement = document.createElement('p');
-                driverElement.innerText = `Name: ${driver.name}, Location: ${driver.location}`;
-                driversContainer.appendChild(driverElement);
-            });
-        }
-
         function initializeMap() {
             const map = L.map('map').setView([51.505, -0.09], 13);
 
@@ -484,4 +466,17 @@
 
                     // Adjust zoom level based on distance
                     const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
-                    map.fitBounds(bounds, {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            }
+
+            return updateMap;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAutocomplete();
+            updateMap = initializeMap();
+        });
+    </script>
+</body>
+</html>
