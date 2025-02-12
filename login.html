@@ -1,3 +1,7 @@
+// Dummy credentials for testing
+//            const dummyPhone = '1234567890';
+//            const dummyPin = '1234';
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,31 +165,42 @@
             const phone = document.getElementById('phone').value;
             const pin = document.getElementById('pin').value;
 
-            const loginDetails = {
-                phone: phone,
-                pin: pin
-            };
+            // Dummy credentials for testing
+            const dummyPhone = '1234567890';
+            const dummyPin = '1234';
 
-            fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/login.yml/dispatches', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'token YOUR_GITHUB_TOKEN',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ref: 'main',
-                    inputs: loginDetails
-                })
-            }).then(response => {
-                if (response.ok) {
-                    alert('Login successful!');
-                } else {
+            if (phone === dummyPhone && pin === dummyPin) {
+                alert('Login successful!');
+                // Navigate to the next page (replace 'nextPage.html' with your actual page)
+                window.location.href = 'nextPage.html';
+            } else {
+                // Proceed with actual authentication
+                const loginDetails = {
+                    phone: phone,
+                    pin: pin
+                };
+
+                fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/login.yml/dispatches', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'token YOUR_GITHUB_TOKEN',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ref: 'main',
+                        inputs: loginDetails
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Login successful!');
+                    } else {
+                        alert('Login failed!');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
                     alert('Login failed!');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Login failed!');
-            });
+                });
+            }
         });
 
         document.getElementById('forgotPasswordLink').addEventListener('click', function() {
