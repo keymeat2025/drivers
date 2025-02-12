@@ -3,32 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Available Drivers</title>
+    <title>Driver Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        .available-drivers {
-            margin-top: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .banner {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px;
             text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .banner .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .banner button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .banner button:hover {
+            background-color: #777;
+        }
+        .container {
+            margin-top: 80px; /* Adjusted for banner height */
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="available-drivers" id="availableDrivers"></div>
+    <div class="banner">
+        <div>Static Banner (Menu will load here in future)</div>
+        <div class="buttons">
+            <button id="helpButton">Help</button>
+            <button id="loginButton">Login</button>
+            <button id="signupButton">Signup</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="text-center">
+            <h3>Driver Dashboard</h3>
+            <div class="loader" id="loader"></div>
+        </div>
+        
+        <div id="currentTrips" class="mb-4">
+            <h4>Current Trips:</h4>
+            <div id="tripsContainer" class="card-columns">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Trip ID: 1</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Destination: Location B</h6>
+                        <p class="card-text">Status: Ongoing</p>
+                        <button class="btn btn-danger" onclick="cancelRide(1)">Cancel</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Trip ID: 2</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Destination: Location C</h6>
+                        <p class="card-text">Status: Completed</p>
+                        <button class="btn btn-danger" onclick="cancelRide(2)">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="driverStatus" class="mb-4">
+            <h4>Update Status:</h4>
+            <button class="btn btn-success" onclick="updateStatus('available')">Available</button>
+            <button class="btn btn-warning" onclick="updateStatus('onTrip')">On a Trip</button>
+        </div>
+        
+        <div id="availableRides">
+            <h4>Available Rides:</h4>
+            <div id="ridesContainer" class="card-columns">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Ride ID: 1</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Pickup: Location A</h6>
+                        <p class="card-text">Destination: Location D</p>
+                        <button class="btn btn-primary" onclick="acceptRide(1)">Accept</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Ride ID: 2</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Pickup: Location B</h6>
+                        <p class="card-text">Destination: Location E</p>
+                        <button class="btn btn-primary" onclick="acceptRide(2)">Accept</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        async function fetchAvailableDrivers(startLocation) {
-            const response = await fetch(`/api/drivers?startLocation=${startLocation}`);
-            const drivers = await response.json();
-            const driversContainer = document.getElementById('availableDrivers');
-            driversContainer.innerHTML = '<h3>Available Drivers:</h3>';
-            drivers.forEach(driver => {
-                const driverElement = document.createElement('p');
-                driverElement.innerText = `Name: ${driver.name}, Location: ${driver.location}`;
-                driversContainer.appendChild(driverElement);
+        async function fetchCurrentTrips() {
+            showLoader();
+            const response = await fetch('/api/currentTrips');
+            const trips = await response.json();
+            const tripsContainer = document.getElementById('tripsContainer');
+            tripsContainer.innerHTML = '';
+            trips.forEach(trip => {
+                const tripElement = createCard(`Trip ID: ${trip.id}`, `Destination: ${trip.destination}`, `Status: ${trip.status}`);
+                tripsContainer.appendChild(tripElement);
             });
+            hideLoader();
         }
 
-        // Example call to fetch available drivers
-        fetchAvailableDrivers('Location A');
+        async function updateStatus(status) {
+            const response = await fetch('/api/updateStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            });
+            alert(response.ok ? 'Status updated successfully!' : 'Failed to update status.');
+        }
+
+        async function fetchAvailableRides() {
+            showLoader();
+            const response = await fetch('/api/availableRides');
+            const rides = await response.json();
+            const ridesContainer = document.getElementById('ridesContainer');
+            ridesContainer.innerHTML = '';
+            rides.forEach(ride => {
+                let rideElement = createCard(`Ride ID: ${ride.id}`, `Pickup: ${ride.pickupLocation}`, `Destination: ${ride.destination}`);
+                const acceptButton = document.createElement('button');
+                acceptButton.className = 'btn btn-primary';
+                acceptButton.innerText = 'Accept';
+                acceptButton.onclick = () => acceptRide(ride.id);
+                rideElement.querySelector('.card-body').appendChild(acceptButton);
+                ridesContainer.appendChild(rideElement);
+            });
+            hideLoader();
+        }
+
+        async function acceptRide(rideId) {
+            const response = await fetch('/api/acceptRide', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rideId: rideId })
+            });
+            alert(response.ok ? 'Ride accepted successfully!' : 'Failed to accept ride.');
+            fetchAvailableRides();
+        }
+
+        async function cancelRide(rideId) {
+            const response = await fetch(`/api/cancelRide`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rideId: rideId })
+            });
+            alert(response.ok ? 'Ride cancelled successfully!' : 'Failed to cancel ride.');
+            fetchCurrentTrips();
+        }
+
+        function createCard(title, subtitle, text) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">${subtitle}</h6>
+                    <p class="card-text">${text}</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function showLoader() {
+            document.getElementById('loader').style.display = 'block';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        // Initial fetch calls
+        fetchCurrentTrips();
+        fetchAvailableRides();
     </script>
 </body>
 </html>
