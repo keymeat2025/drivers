@@ -65,7 +65,8 @@
             color: #666;
         }
         .container input[type="tel"], 
-        .container input[type="password"] {
+        .container input[type="password"],
+        .container input[type="email"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -86,6 +87,23 @@
         .container button:hover {
             background-color: #218838;
         }
+        .forgot-password {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .forgot-password a {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        .otp-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +123,35 @@
             <input type="password" id="pin" name="pin" placeholder="PIN" required>
             <button type="submit">Login</button>
         </form>
+        <div class="forgot-password">
+            <a id="forgotPasswordLink">Forgot Password?</a>
+        </div>
+    </div>
+
+    <div class="container" id="forgotPasswordContainer" style="display: none;">
+        <h2>Forgot Password</h2>
+        <p>Please choose how you would like to receive the OTP to reset your password.</p>
+        <form id="forgotPasswordForm">
+            <div>
+                <input type="radio" id="otpEmail" name="otpMethod" value="email" required>
+                <label for="otpEmail">Email</label>
+            </div>
+            <div>
+                <input type="radio" id="otpPhone" name="otpMethod" value="phone" required>
+                <label for="otpPhone">Mobile Number</label>
+            </div>
+            <input type="email" id="email" name="email" placeholder="Email Address" style="display: none;">
+            <input type="tel" id="phoneForOtp" name="phoneForOtp" placeholder="Phone Number" style="display: none;">
+            <button type="submit">Submit</button>
+        </form>
+        <div class="otp-container" id="otpContainer">
+            <p>An OTP has been sent. Please enter it below to reset your password.</p>
+            <form id="otpForm">
+                <input type="tel" id="otp" name="otp" placeholder="Enter OTP" required>
+                <input type="password" id="newPassword" name="newPassword" placeholder="New Password" required>
+                <button type="submit">Reset Password</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -138,6 +185,92 @@
             }).catch(error => {
                 console.error('Error:', error);
                 alert('Login failed!');
+            });
+        });
+
+        document.getElementById('forgotPasswordLink').addEventListener('click', function() {
+            document.getElementById('forgotPasswordContainer').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+        });
+
+        document.getElementById('otpEmail').addEventListener('change', function() {
+            document.getElementById('email').style.display = 'block';
+            document.getElementById('phoneForOtp').style.display = 'none';
+        });
+
+        document.getElementById('otpPhone').addEventListener('change', function() {
+            document.getElementById('email').style.display = 'none';
+            document.getElementById('phoneForOtp').style.display = 'block';
+        });
+
+        document.getElementById('forgotPasswordForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const method = document.querySelector('input[name="otpMethod"]:checked').value;
+            let contactInfo = '';
+
+            if (method === 'email') {
+                contactInfo = document.getElementById('email').value;
+            } else if (method === 'phone') {
+                contactInfo = document.getElementById('phoneForOtp').value;
+            }
+
+            fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/forgot_password.yml/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'token YOUR_GITHUB_TOKEN',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ref: 'main',
+                    inputs: { method: method, contactInfo: contactInfo }
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('OTP sent! Check your ' + method + ' for further instructions.');
+                    // Display OTP container for OTP-based reset
+                    document.getElementById('otpContainer').style.display = 'flex';
+                } else {
+                    alert('Failed to send OTP!');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send OTP!');
+            });
+        });
+
+        document.getElementById('otpForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const otp = document.getElementById('otp').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            const otpDetails = {
+                otp: otp,
+                newPassword: newPassword
+            };
+
+            fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/reset_password_via_otp.yml/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'token YOUR_GITHUB_TOKEN',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ref: 'main',
+                    inputs: otpDetails
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Password reset successful!');
+                    // Hide OTP container after reset
+                    document.getElementById('otpContainer').style.display = 'none';
+                } else {
+                    alert('Failed to reset password!');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('Failed to reset password!');
             });
         });
     </script>
