@@ -1,6 +1,6 @@
 // Dummy credentials for testing
-//            const dummyPhone = '1234567890';
-//            const dummyPin = '1234';
+//              carOwner: { phone: '1234567890', pin: '1234' },
+//                driver: { phone: '0987654321', pin: '4321' }
 
 <!DOCTYPE html>
 <html lang="en">
@@ -70,7 +70,7 @@
         }
         .container input[type="tel"], 
         .container input[type="password"],
-        .container input[type="email"] {
+        .container input[type="radio"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -125,6 +125,14 @@
         <form id="loginForm">
             <input type="tel" id="phone" name="phone" placeholder="Phone Number" required>
             <input type="password" id="pin" name="pin" placeholder="PIN" required>
+            <div>
+                <input type="radio" id="carOwner" name="userType" value="carOwner" required>
+                <label for="carOwner">Car Owner</label>
+            </div>
+            <div>
+                <input type="radio" id="driver" name="userType" value="driver" required>
+                <label for="driver">Driver</label>
+            </div>
             <button type="submit">Login</button>
         </form>
         <div class="forgot-password">
@@ -164,15 +172,22 @@
 
             const phone = document.getElementById('phone').value;
             const pin = document.getElementById('pin').value;
+            const userType = document.querySelector('input[name="userType"]:checked').value;
 
             // Dummy credentials for testing
-            const dummyPhone = '1234567890';
-            const dummyPin = '1234';
+            const dummyCreds = {
+                carOwner: { phone: '1234567890', pin: '1234' },
+                driver: { phone: '0987654321', pin: '4321' }
+            };
 
-            if (phone === dummyPhone && pin === dummyPin) {
+            if ((phone === dummyCreds.carOwner.phone && pin === dummyCreds.carOwner.pin && userType === 'carOwner') ||
+                (phone === dummyCreds.driver.phone && pin === dummyCreds.driver.pin && userType === 'driver')) {
                 alert('Login successful!');
-                // Navigate to the next page (replace 'nextPage.html' with your actual page)
-                window.location.href = 'book-driver.html';
+                if (userType === 'carOwner') {
+                    window.location.href = 'book-driver.html';
+                } else if (userType === 'driver') {
+                    window.location.href = 'driver-dashboard.html';
+                }
             } else {
                 // Proceed with actual authentication
                 const loginDetails = {
