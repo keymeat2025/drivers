@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login</title>
     <style>
+        /* Styles omitted for brevity */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -162,7 +163,28 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
+            authDomain: "drivers-5e2b3.firebaseapp.com",
+            projectId: "drivers-5e2b3",
+            storageBucket: "drivers-5e2b3.firebasestorage.app",
+            messagingSenderId: "343394512517",
+            appId: "1:343394512517:web:24039feda802ab3f8bc3ec",
+            measurementId: "G-XE0GXK81JK"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -170,48 +192,19 @@
             const pin = document.getElementById('pin').value;
             const userType = document.querySelector('input[name="userType"]:checked').value;
 
-            // Dummy credentials for testing
-            const dummyCreds = {
-                carOwner: { phone: '1234567890', pin: '1234' },
-                driver: { phone: '0987654321', pin: '4321' }
-            };
-
-            if ((phone === dummyCreds.carOwner.phone && pin === dummyCreds.carOwner.pin && userType === 'carOwner') ||
-                (phone === dummyCreds.driver.phone && pin === dummyCreds.driver.pin && userType === 'driver')) {
-                alert('Login successful!');
-                if (userType === 'carOwner') {
-                    window.location.href = 'book-driver.html';
-                } else if (userType === 'driver') {
-                    window.location.href = 'driver-dashboard.html';
-                }
-            } else {
-                // Proceed with actual authentication
-                const loginDetails = {
-                    phone: phone,
-                    pin: pin
-                };
-
-                fetch('https://api.github.com/repos/keymeat2025/drivers/actions/workflows/login.yml/dispatches', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'token YOUR_GITHUB_TOKEN',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        ref: 'main',
-                        inputs: loginDetails
-                    })
-                }).then(response => {
-                    if (response.ok) {
-                        alert('Login successful!');
-                    } else {
-                        alert('Login failed!');
+            signInWithEmailAndPassword(auth, phone + "@domain.com", pin)
+                .then((userCredential) => {
+                    alert('Login successful!');
+                    if (userType === 'carOwner') {
+                        window.location.href = 'book-driver.html';
+                    } else if (userType === 'driver') {
+                        window.location.href = 'driver-dashboard.html';
                     }
-                }).catch(error => {
+                })
+                .catch((error) => {
+                    alert('Login failed: ' + error.message);
                     console.error('Error:', error);
-                    alert('Login failed!');
                 });
-            }
         });
 
         document.getElementById('forgotPasswordLink').addEventListener('click', function() {
