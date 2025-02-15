@@ -1,7 +1,3 @@
-// Dummy credentials for testing
-//              carOwner: { phone: '1234567890', pin: '1234' },
-//                driver: { phone: '0987654321', pin: '4321' }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -301,6 +297,11 @@
                 console.error('Error:', error);
                 alert('Failed to reset password!');
             });
+        });
+
+        // Add event listener for the signup button
+        document.getElementById('signupButton').addEventListener('click', function() {
+            window.location.href = 'register.html';
         });
     </script>
 </body>
