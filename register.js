@@ -2,11 +2,9 @@
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
   // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
   const firebaseConfig = {
     apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
     authDomain: "drivers-5e2b3.firebaseapp.com",
@@ -20,9 +18,9 @@
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
-</script>
+  const auth = getAuth(app);
 
-document.getElementById('registrationForm').addEventListener('submit', function(event) {
+  document.getElementById('registrationForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const phone = document.getElementById('phone').value;
@@ -31,21 +29,16 @@ document.getElementById('registrationForm').addEventListener('submit', function(
     const userType = document.getElementById('userType').value;
 
     if (pin !== reEnterPin) {
-        alert('PIN and Re-enter PIN do not match.');
-        return;
+      alert('PIN and Re-enter PIN do not match.');
+      return;
     }
 
-    // You can add Firebase authentication and database operations here
-    firebase.auth().createUserWithEmailAndPassword(phone + "@domain.com", pin)
-        .then((userCredential) => {
-            // Signed in 
-            var user = userCredential.user;
-            alert('Registration successful!');
-        })
-        .catch((error) => {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            alert('Registration failed: ' + errorMessage);
-            console.error('Error:', error);
-        });
-});
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, phone + "@domain.com", pin);
+      alert('Registration successful!');
+    } catch (error) {
+      alert('Registration failed: ' + error.message);
+      console.error('Error:', error);
+    }
+  });
+</script>
