@@ -170,6 +170,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // Ensure reCAPTCHA is initialized properly
+        const appVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -177,27 +180,26 @@
             const pin = document.getElementById('pin').value;
             const userType = document.querySelector('input[name="userType"]:checked').value;
 
-            // Initialize reCAPTCHA verifier
-            const appVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
-            appVerifier.render();
-
-            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
-                .then((confirmationResult) => {
-                    const code = window.prompt('Enter the verification code sent to your phone');
-                    return confirmationResult.confirm(code);
-                })
-                .then((result) => {
-                    alert('Login successful!');
-                    if (userType === 'carOwner') {
-                        window.location.href = 'book-driver.html';
-                    } else if (userType === 'driver') {
-                        window.location.href = 'driver-dashboard.html';
-                    }
-                })
-                .catch((error) => {
-                    alert('Login failed: ' + error.message);
-                    console.error('Error:', error);
-                });
+            // Render reCAPTCHA verifier
+            appVerifier.render().then(() => {
+                signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                    .then((confirmationResult) => {
+                        const code = window.prompt('Enter the verification code sent to your phone');
+                        return confirmationResult.confirm(code);
+                    })
+                    .then((result) => {
+                        alert('Login successful!');
+                        if (userType === 'carOwner') {
+                            window.location.href = 'book-driver.html';
+                        } else if (userType === 'driver') {
+                            window.location.href = 'driver-dashboard.html';
+                        }
+                    })
+                    .catch((error) => {
+                        alert('Login failed: ' + error.message);
+                        console.error('Error:', error);
+                    });
+            });
         });
 
         document.getElementById('forgotPasswordLink').addEventListener('click', function() {
@@ -209,20 +211,19 @@
 
             const phoneNumber = document.getElementById('phoneForOtp').value;
 
-            // Initialize reCAPTCHA verifier
-            const appVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
-            appVerifier.render();
-
-            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
-                .then((confirmationResult) => {
-                    alert('OTP sent! Check your phone for further instructions.');
-                    document.getElementById('otpContainer').style.display = 'flex';
-                    window.confirmationResult = confirmationResult;
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert('Failed to send OTP!');
-                });
+            // Render reCAPTCHA verifier
+            appVerifier.render().then(() => {
+                signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                    .then((confirmationResult) => {
+                        alert('OTP sent! Check your phone for further instructions.');
+                        document.getElementById('otpContainer').style.display = 'flex';
+                        window.confirmationResult = confirmationResult;
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Failed to send OTP!');
+                    });
+            });
         });
 
         document.getElementById('otpForm').addEventListener('submit', function(event) {
