@@ -65,7 +65,7 @@
             margin-bottom: 20px;
             color: #666;
         }
-        .container input[type="email"], 
+        .container input[type="tel"],
         .container input[type="password"],
         .container input[type="radio"] {
             width: 100%;
@@ -120,7 +120,7 @@
         <h2>Login</h2>
         <p>Please log in to continue using our services.</p>
         <form id="loginForm">
-            <input type="email" id="email" name="email" placeholder="Email ID" required>
+            <input type="tel" id="phone" name="phone" placeholder="Mobile Number" required>
             <input type="password" id="pin" name="pin" placeholder="PIN" required>
             <div>
                 <input type="radio" id="carOwner" name="userType" value="carOwner" required>
@@ -136,23 +136,26 @@
             <a id="forgotPasswordLink">Forgot Password?</a>
         </div>
     </div>
-
     <div class="container" id="forgotPasswordContainer" style="display: none;">
         <h2>Forgot Password</h2>
-        <p>Please enter your email ID to receive a reset link.</p>
+        <p>Please enter your mobile number to receive an OTP.</p>
         <form id="forgotPasswordForm">
-            <input type="email" id="emailForOtp" name="emailForOtp" placeholder="Email Address" required>
+            <input type="tel" id="phoneForOtp" name="phoneForOtp" placeholder="Mobile Number" required>
             <button type="submit">Submit</button>
         </form>
         <div class="otp-container" id="otpContainer">
-            <p>A reset link has been shared to your entered email ID.</p>
+            <p>An OTP has been sent. Please enter it below to reset your password.</p>
+            <form id="otpForm">
+                <input type="tel" id="otp" name="otp" placeholder="Enter OTP" required>
+                <input type="password" id="newPassword" name="newPassword" placeholder="New Password" required>
+                <button type="submit">Reset Password</button>
+            </form>
         </div>
     </div>
-
+    <div id="recaptcha-container"></div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+        import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
@@ -165,18 +168,25 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
 
         document.getElementById('loginForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const phoneNumber = document.getElementById('phone').value;
             const pin = document.getElementById('pin').value;
             const userType = document.querySelector('input[name="userType"]:checked').value;
 
-            signInWithEmailAndPassword(auth, email, pin)
-                .then((userCredential) => {
+            // Initialize reCAPTCHA verifier
+            const appVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+            appVerifier.render();
+
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    const code = window.prompt('Enter the verification code sent to your phone');
+                    return confirmationResult.confirm(code);
+                })
+                .then((result) => {
                     alert('Login successful!');
                     if (userType === 'carOwner') {
                         window.location.href = 'book-driver.html';
@@ -197,16 +207,44 @@
         document.getElementById('forgotPasswordForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const emailForOtp = document.getElementById('emailForOtp').value;
+            const phoneNumber = document.getElementById('phoneForOtp').value;
 
-            sendPasswordResetEmail(auth, emailForOtp)
-                .then(() => {
-                    alert('Reset link sent! Check your email for further instructions.');
+            // Initialize reCAPTCHA verifier
+            const appVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+            appVerifier.render();
+
+            signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+                .then((confirmationResult) => {
+                    alert('OTP sent! Check your phone for further instructions.');
                     document.getElementById('otpContainer').style.display = 'flex';
+                    window.confirmationResult = confirmationResult;
                 })
                 .catch((error) => {
                     console.error('Error:', error);
-                    alert('Failed to send reset link!');
+                    alert('Failed to send OTP!');
+                });
+        });
+
+        document.getElementById('otpForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const otp = document.getElementById('otp').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            window.confirmationResult.confirm(otp)
+                .then((result) => {
+                    // Update the user's password
+                    result.user.updatePassword(newPassword).then(() => {
+                        alert('Password reset successful!');
+                        document.getElementById('otpContainer').style.display = 'none';
+                    }).catch((error) => {
+                        console.error('Error:', error);
+                        alert('Failed to reset password!');
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('Failed to verify OTP!');
                 });
         });
 
