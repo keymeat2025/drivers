@@ -77,7 +77,7 @@
         <div>Static Banner (Menu will load here in future)</div>
         <div class="buttons">
             <button id="helpButton">Help</button>
-            <button id="loginButton">Login</button>
+            <button id="authButton">Login</button>
             <button id="signupButton">Signup</button>
         </div>
     </div>
@@ -139,7 +139,68 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
+            authDomain: "drivers-5e2b3.firebaseapp.com",
+            projectId: "drivers-5e2b3",
+            storageBucket: "drivers-5e2b3.firebasestorage.app",
+            messagingSenderId: "343394512517",
+            appId: "1:343394512517:web:24039feda802ab3f8bc3ec",
+            measurementId: "G-XE0GXK81JK"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+        const authButton = document.getElementById('authButton');
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const phone = document.getElementById('phone').value;
+            const pin = document.getElementById('pin').value;
+            const userType = document.querySelector('input[name="userType"]:checked').value;
+
+            signInWithEmailAndPassword(auth, phone + "@domain.com", pin)
+                .then((userCredential) => {
+                    alert('Login successful!');
+                    // Update the auth button to Logout
+                    authButton.textContent = 'Logout';
+                    authButton.addEventListener('click', handleLogout);
+                    if (userType === 'carOwner') {
+                        window.location.href = 'book-driver.html';
+                    } else if (userType === 'driver') {
+                        window.location.href = 'driver-dashboard.html';
+                    }
+                })
+                .catch((error) => {
+                    alert('Login failed: ' + error.message);
+                    console.error('Error:', error);
+                });
+        });
+
+        function handleLogout() {
+            signOut(auth).then(() => {
+                alert('Logged out successfully!');
+                // Update the auth button back to Login
+                authButton.textContent = 'Login';
+                authButton.removeEventListener('click', handleLogout);
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                alert('Logout failed: ' + error.message);
+                console.error('Error:', error);
+            });
+        }
+
         async function fetchCurrentTrips() {
             showLoader();
             const response = await fetch('/api/currentTrips');
