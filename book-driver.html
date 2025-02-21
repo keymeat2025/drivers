@@ -494,12 +494,14 @@
             window.location.href = 'index.html';
         }
 
-        document.getElementById('authButton').addEventListener('click', handleLogin);
-
         document.addEventListener('DOMContentLoaded', function() {
+            if (userName) {
+                updateAuthButtonToLogout();
+            } else {
+                document.getElementById('authButton').addEventListener('click', handleLogin);
+            }
             initializeAutocomplete();
             updateMap = initializeMap();
         });
     </script>
-</body>
-</html>
+</
