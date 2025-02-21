@@ -187,7 +187,7 @@
         <div>Driveroncall</div>
         <div class="buttons">
             <button id="helpButton">Help</button>
-            <button id="loginButton">Login</button>
+            <button id="authButton">Login</button>
             <button id="signupButton">Signup</button>
         </div>
     </div>
@@ -237,6 +237,7 @@
         const userName = localStorage.getItem('userName');
         if (userName) {
             document.getElementById('welcomeNote').innerText = `Welcome, ${userName}!`;
+            updateAuthButtonToLogout();
         }
 
         document.getElementById('seePricesButton').addEventListener('click', function() {
@@ -425,13 +426,13 @@
                         map.removeLayer(pickupMarker);
                     }
                     pickupMarker = L.marker([lat, lon]).addTo(map);
-                    document.getElementById('pickupLocation').value = await getAddress(lat, lon); // Update input field
+                    document.getElementById('pickupLocation').value = await getAddress(lat, lon);
                 } else if (inputId === 'dropoffLocation') {
                     if (dropoffMarker) {
                         map.removeLayer(dropoffMarker);
                     }
                     dropoffMarker = L.marker([lat, lon]).addTo(map);
-                    document.getElementById('dropoffLocation').value = await getAddress(lat, lon); // Update input field
+                    document.getElementById('dropoffLocation').value = await getAddress(lat, lon);
                 }
                 calculateRoute();
             }
@@ -464,7 +465,6 @@
                     });
                     dropoffMarker.bindTooltip(destinationBanner).openTooltip();
 
-                    // Adjust zoom level based on distance
                     const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
                     map.fitBounds(bounds, { padding: [50, 50] });
                 }
@@ -472,6 +472,29 @@
 
             return updateMap;
         }
+
+        function updateAuthButtonToLogout() {
+            const authButton = document.getElementById('authButton');
+            authButton.textContent = 'Logout';
+            authButton.removeEventListener('click', handleLogin);
+            authButton.addEventListener('click', handleLogout);
+        }
+
+        function handleLogin() {
+            window.location.href = 'login.html';
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('userName');
+            alert('Logged out successfully!');
+            const authButton = document.getElementById('authButton');
+            authButton.textContent = 'Login';
+            authButton.removeEventListener('click', handleLogout);
+            authButton.addEventListener('click', handleLogin);
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('authButton').addEventListener('click', handleLogin);
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeAutocomplete();
