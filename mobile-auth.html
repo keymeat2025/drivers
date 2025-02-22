@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Authentication</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom, #e0ffff, #cce0ff);
+      color: #333;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      color: #3f51b5;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group select,
+    .input-group input {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-group select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: #fff;
+      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOCIgaGVpZ2h0PSIxMiI+PHBhdGggZmlsbD0iIzQ0NDAiIGQ9Ik00IDBMMCA2bDc2IDYgNTYtNnoiLz48L3N2Zz4=");
+      background-size: 15px;
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      padding-right: 30px;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      border-color: #3f51b5;
+    }
+
+    .input-group .material-icons {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      color: #9e9e9e;
+      pointer-events: none;
+    }
+
+    button {
+      background-color: #3f51b5;
+      color: #ffffff;
+      border: none;
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      font-size: 16px;
+      font-weight: 500;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      background-color: #303f9f;
+    }
+
+    #verification-container {
+      display: none;
+    }
+
+    #recaptcha-container {
+      margin-bottom: 20px;
+    }
+
+    p#message {
+      margin-top: 20px;
+      font-weight: 500;
+    }
+    .success-message {
+      color: #219C90;
+    }
+
+    .error-message {
+      color: #EE4E4E;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Phone Verification</h2>
+
+    <div id="phone-form">
+      <label for="phoneNumber">Enter your phone number:</label>
+      <div class="input-group">
+        <select id="countryCode">
+         <option value="+1">+1 (US)</option>
+    <option value="+44">+44 (UK)</option>
+    <option value="+91">+91 (IN)</option>
+    <option value="+61">+61 (AU)</option>
+    <option value="+20" selected>+20 (EG)</option>
+    <option value="+213">+213 (DZ)</option>
+    <option value="+376">+376 (AD)</option>
+    <option value="+244">+244 (AO)</option>
+    <option value="+54">+54 (AR)</option>
+    <option value="+374">+374 (AM)</option>
+    <option value="+43">+43 (AT)</option>
+    <option value="+994">+994 (AZ)</option>
+    <option value="+973">+973 (BH)</option>
+    <option value="+880">+880 (BD)</option>
+    <option value="+375">+375 (BY)</option>
+    <option value="+32">+32 (BE)</option>
+    <option value="+501">+501 (BZ)</option>
+    <option value="+229">+229 (BJ)</option>
+    <option value="+975">+975 (BT)</option>
+    <option value="+591">+591 (BO)</option>
+    <option value="+387">+387 (BA)</option>
+    <option value="+267">+267 (BW)</option>
+    <option value="+55">+55 (BR)</option>
+    <option value="+359">+359 (BG)</option>
+    <option value="+226">+226 (BF)</option>
+    <option value="+257">+257 (BI)</option>
+    <option value="+855">+855 (KH)</option>
+    <option value="+237">+237 (CM)</option>
+    <option value="+1">+1 (CA)</option>
+    <option value="+238">+238 (CV)</option>
+    <option value="+236">+236 (CF)</option>
+    <option value="+235">+235 (TD)</option>
+    <option value="+56">+56 (CL)</option>
+    <option value="+86">+86 (CN)</option>
+    <option value="+57">+57 (CO)</option>
+    <option value="+269">+269 (KM)</option>
+    <option value="+242">+242 (CG)</option>
+    <option value="+243">+243 (CD)</option>
+    <option value="+682">+682 (CK)</option>
+    <option value="+506">+506 (CR)</option>
+    <option value="+385">+385 (HR)</option>
+    <option value="+53">+53 (CU)</option>
+    <option value="+357">+357 (CY)</option>
+    <option value="+420">+420 (CZ)</option>
+    <option value="+45">+45 (DK)</option>
+    <option value="+253">+253 (DJ)</option>
+    <option value="+1">+1 (DM)</option>
+    <option value="+1">+1 (DO)</option>
+    <option value="+593">+593 (EC)</option>
+    <option value="+503">+503 (SV)</option>
+    <option value="+240">+240 (GQ)</option>
+    <option value="+291">+291 (ER)</option>
+    <option value="+372">+372 (EE)</option>
+    <option value="+251">+251 (ET)</option>
+    <option value="+679">+679 (FJ)</option>
+    <option value="+358">+358 (FI)</option>
+    <option value="+33">+33 (FR)</option>
+    <option value="+241">+241 (GA)</option>
+    <option value="+220">+220 (GM)</option>
+    <option value="+995">+995 (GE)</option>
+    <option value="+49">+49 (DE)</option>
+    <option value="+233">+233 (GH)</option>
+    <option value="+30">+30 (GR)</option>
+    <option value="+299">+299 (GL)</option>
+    <option value="+1">+1 (GD)</option>
+    <option value="+502">+502 (GT)</option>
+    <option value="+224">+224 (GN)</option>
+    <option value="+245">+245 (GW)</option>
+    <option value="+592">+592 (GY)</option>
+    <option value="+509">+509 (HT)</option>
+    <option value="+504">+504 (HN)</option>
+    <option value="+852">+852 (HK)</option>
+    <option value="+36">+36 (HU)</option>
+    <option value="+354">+354 (IS)</option>
+    <option value="+62">+62 (ID)</option>
+    <option value="+98">+98 (IR)</option>
+    <option value="+964">+964 (IQ)</option>
+    <option value="+353">+353 (IE)</option>
+    <option value="+972">+972 (IL)</option>
+    <option value="+39">+39 (IT)</option>
+    <option value="+225">+225 (CI)</option>
+    <option value="+1">+1 (JM)</option>
+    <option value="+81">+81 (JP)</option>
+    <option value="+962">+962 (JO)</option>
+    <option value="+7">+7 (KZ)</option>
+    <option value="+254">+254 (KE)</option>
+    <option value="+686">+686 (KI)</option>
+    <option value="+383">+383 (XK)</option>
+    <option value="+965">+965 (KW)</option>
+    <option value="+996">+996 (KG)</option>
+    <option value="+856">+856 (LA)</option>
+    <option value="+371">+371 (LV)</option>
+    <option value="+961">+961 (LB)</option>
+    <option value="+266">+266 (LS)</option>
+    <option value="+231">+231 (LR)</option>
+    <option value="+218">+218 (LY)</option>
+    <option value="+423">+423 (LI)</option>
+    <option value="+370">+370 (LT)</option>
+    <option value="+352">+352 (LU)</option>
+    <option value="+853">+853 (MO)</option>
+    <option value="+389">+389 (MK)</option>
+    <option value="+261">+261 (MG)</option>
+    <option value="+265">+265 (MW)</option>
+    <option value="+60">+60 (MY)</option>
+    <option value="+960">+960 (MV)</option>
+    <option value="+223">+223 (ML)</option>
+    <option value="+356">+356 (MT)</option>
+    <option value="+692">+692 (MH)</option>
+    <option value="+222">+222 (MR)</option>
+    <option value="+230">+230 (MU)</option>
+    <option value="+52">+52 (MX)</option>
+    <option value="+691">+691 (FM)</option>
+    <option value="+373">+373 (MD)</option>
+    <option value="+377">+377 (MC)</option>
+    <option value="+976">+976 (MN)</option>
+    <option value="+382">+382 (ME)</option>
+    <option value="+212">+212 (MA)</option>
+    <option value="+258">+258 (MZ)</option>
+    <option value="+95">+95 (MM)</option>
+    <option value="+264">+264 (NA)</option>
+    <option value="+674">+674 (NR)</option>
+    <option value="+977">+977 (NP)</option>
+    <option value="+31">+31 (NL)</option>
+    <option value="+64">+64 (NZ)</option>
+    <option value="+505">+505 (NI)</option>
+    <option value="+227">+227 (NE)</option>
+    <option value="+234">+234 (NG)</option>
+    <option value="+683">+683 (NU)</option>
+    <option value="+850">+850 (KP)</option>
+    <option value="+47">+47 (NO)</option>
+    <option value="+968">+968 (OM)</option>
+    <option value="+92">+92 (PK)</option>
+    <option value="+680">+680 (PW)</option>
+    <option value="+970">+970 (PS)</option>
+    <option value="+507">+507 (PA)</option>
+    <option value="+675">+675 (PG)</option>
+    <option value="+595">+595 (PY)</option>
+    <option value="+51">+51 (PE)</option>
+    <option value="+63">+63 (PH)</option>
+    <option value="+48">+48 (PL)</option>
+    <option value="+351">+351 (PT)</option>
+    <option value="+974">+974 (QA)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <input type="tel" id="phoneNumber" placeholder="1234567890" inputmode="numeric">
+        <i class="material-icons">phone</i>
+      </div>
+      <div id="recaptcha-container"></div>
+      <button onclick="sendOTP()">Send OTP</button>
+    </div>
+
+    <div id="verification-container">
+      <label for="otp">Enter OTP:</label>
+      <div class="input-group">
+        <input type="text" id="otp" placeholder="Enter 6-digit code" inputmode="numeric" maxlength="6">
+        <i class="material-icons">lock</i>
+      </div>
+      <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+
+    <p id="message"></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script>
+  
+
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
+    authDomain: "drivers-5e2b3.firebaseapp.com",
+    projectId: "drivers-5e2b3",
+    storageBucket: "drivers-5e2b3.firebasestorage.app",
+    messagingSenderId: "343394512517",
+    appId: "1:343394512517:web:24039feda802ab3f8bc3ec",
+    measurementId: "G-XE0GXK81JK"
+  };
+
+
+    firebase.initializeApp(firebaseConfig);
+
+    let windowConfirmationResult = null;
+    const countryCodeInput = document.getElementById("countryCode");
+    const phoneNumberInput = document.getElementById("phoneNumber");
+    const otpInput = document.getElementById("otp");
+    const messageElement = document.getElementById("message");
+    const phoneForm = document.getElementById("phone-form");
+    const verificationContainer = document.getElementById("verification-container");
+
+    function setupRecaptcha() {
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': function (response) {
+          sendOTP();
+        }
+      });
+    }
+
+    function sendOTP() {
+      const countryCode = countryCodeInput.value;
+      const phoneNumber = phoneNumberInput.value;
+      const fullPhoneNumber = countryCode + phoneNumber;
+      const appVerifier = window.recaptchaVerifier;
+
+      firebase.auth().signInWithPhoneNumber(fullPhoneNumber, appVerifier)
+        .then(function (confirmationResult) {
+          window.confirmationResult = confirmationResult;
+          messageElement.textContent = "OTP sent!";
+          messageElement.classList.remove("error-message");
+          messageElement.classList.add("success-message");
+          phoneForm.style.display = "none";
+          verificationContainer.style.display = "block";
+        })
+        .catch(function (error) {
+          messageElement.textContent = `Error: ${error.message}`;
+          messageElement.classList.remove("success-message");
+          messageElement.classList.add("error-message");
+        });
+    }
+
+    function verifyOTP() {
+      const otp = otpInput.value;
+
+      if (window.confirmationResult) {
+        window.confirmationResult.confirm(otp)
+          .then(function (result) {
+            const user = result.user;
+            const phoneNumber = user.phoneNumber;
+            messageElement.textContent = "Logged in! User ID: " + user.uid +
+              ", Phone: " + phoneNumber;
+            messageElement.classList.remove("error-message");
+            messageElement.classList.add("success-message");
+          })
+          .catch(function (error) {
+            messageElement.textContent = `Error: ${error.message}`;
+            messageElement.classList.remove("success-message");
+            messageElement.classList.add("error-message");
+          });
+      }
+    }
+
+    window.onload = function () {
+      setupRecaptcha();
+    };
+
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+
+      } else {
+
+      }
+    });
+  </script>
+</body>
+</html>
