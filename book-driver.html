@@ -1,7 +1,4 @@
-  
-  
-  
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -273,6 +270,7 @@
                 <p><strong>Time:</strong> ${time}</p>
                 <p><strong>Car Type:</strong> ${carType}</p>
                 <p id="distanceTimeDetails"></p>
+                <p id="totalDistanceDetails"></p>
             `;
 
             if (pickupMarker && dropoffMarker) {
@@ -460,6 +458,7 @@
                     const hours = Math.floor(duration / 3600);
                     const minutes = Math.floor((duration % 3600) / 60);
                     document.getElementById('distanceTimeDetails').innerText = `Distance: ${distance} km, Duration: ${hours} hrs ${minutes} mins`;
+                    document.getElementById('totalDistanceDetails').innerText = `Total Distance: ${distance} km`;
 
                     if (destinationBanner) {
                         map.removeLayer(destinationBanner);
@@ -500,30 +499,57 @@
 
             authButton.addEventListener('click', handleLogin);
 
-            window.location.href = 'index.html';
+            window.location.href ='index.html';
+
+
 
         }
 
 
 
+
+
+
+
         document.addEventListener('DOMContentLoaded', function() {
+
+
 
             if (userName) {
 
+
+
                 updateAuthButtonToLogout();
+
+
 
             } else {
 
+
+
                 document.getElementById('authButton').addEventListener('click', handleLogin);
+
+
 
             }
 
+
+
             initializeAutocomplete();
+
+
 
             updateMap = initializeMap();
 
+
+
         });
+
+
 
     </script>
 
+
+
 </
+
