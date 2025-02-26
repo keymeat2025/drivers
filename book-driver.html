@@ -232,11 +232,10 @@
         </div>
         <div id="map"></div>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script src="store-booking.js"></script>
-   
     <script>
         const LOCATIONIQ_API_KEY = 'pk.3ff92f87d4bd491b6a78884f21390cf7';
 
@@ -245,6 +244,9 @@
             document.getElementById('welcomeNote').innerText = `Welcome, ${userName}!`;
             updateAuthButtonToLogout();
         }
+
+        let pickupMarker;
+        let dropoffMarker;
 
         document.getElementById('seePricesButton').addEventListener('click', function() {
             const pickupLocation = document.getElementById('pickupLocation').value;
@@ -371,11 +373,6 @@
 
             streetLayer.addTo(map);
             L.control.layers(baseMaps).addTo(map);
-
-            let pickupMarker;
-            let dropoffMarker;
-            let routePolyline;
-            let destinationBanner;
 
             map.on('click', async function(e) {
                 const { lat, lng } = e.latlng;
