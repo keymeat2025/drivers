@@ -1,6 +1,5 @@
 // Firebase configuration
 
-
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
@@ -11,8 +10,9 @@ const firebaseConfig = {
   appId: "1:343394512517:web:24039feda802ab3f8bc3ec",
   measurementId: "G-XE0GXK81JK"
 };
+
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 document.getElementById('bookingForm').addEventListener('submit', function(event) {
@@ -26,6 +26,10 @@ document.getElementById('bookingForm').addEventListener('submit', function(event
         carType: document.getElementById('carType').value,
         userName: localStorage.getItem('userName')
     };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
 
     db.collection('bookings').add(bookingDetails)
         .then(() => {
