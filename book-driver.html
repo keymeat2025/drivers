@@ -235,7 +235,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="store-booking.js"></script>
+    <script src="store-booking.js" type="module"></script>
     <script>
         const LOCATIONIQ_API_KEY = 'pk.3ff92f87d4bd491b6a78884f21390cf7';
 
@@ -247,6 +247,7 @@
 
         let pickupMarker;
         let dropoffMarker;
+        let routePolyline;
 
         document.getElementById('seePricesButton').addEventListener('click', function() {
             const pickupLocation = document.getElementById('pickupLocation').value;
@@ -393,59 +394,59 @@
                 calculateRoute();
             });
 
-            async function updateMap(inputId, lat, lon) {
-                map.setView([lat, lon], 13);
-                if (inputId === 'pickupLocation') {
-                    if (pickupMarker) {
-                        map.removeLayer(pickupMarker);
-                    }
-                    pickupMarker = L.marker([lat, lon]).addTo(map);
-                    document.getElementById('pickupLocation').value = await getAddress(lat, lon);
-                } else if (inputId === 'dropoffLocation') {
-                    if (dropoffMarker) {
-                        map.removeLayer(dropoffMarker);
-                    }
-                    dropoffMarker = L.marker([lat, lon]).addTo(map);
-                    document.getElementById('dropoffLocation').value = await getAddress(lat, lon);
-                }
-                calculateRoute();
-            }
-
-            async function calculateRoute() {
-                if (pickupMarker && dropoffMarker) {
-                    const pickupLatLng = pickupMarker.getLatLng();
-                    const dropoffLatLng = dropoffMarker.getLatLng();
-                    const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLatLng.lng},${pickupLatLng.lat};${dropoffLatLng.lng},${dropoffLatLng.lat}?overview=full&geometries=geojson`);
-                    const data = await response.json();
-                    const route = data.routes[0];
-
-                    if (routePolyline) {
-                        map.removeLayer(routePolyline);
-                    }
-
-                    routePolyline = L.geoJSON(route.geometry).addTo(map);
-                    const distance = (route.distance / 1000).toFixed(2);
-                    const duration = route.duration;
-                    const hours = Math.floor(duration / 3600);
-                    const minutes = Math.floor((duration % 3600) / 60);
-                    document.getElementById('distanceTimeDetails').innerText = `Distance: ${distance} km, Duration: ${hours} hrs ${minutes} mins`;
-                    document.getElementById('totalDistanceDetails').innerText = `Total Distance: ${distance} km`;
-
-                    if (destinationBanner) {
-                        map.removeLayer(destinationBanner);
-                    }
-                    destinationBanner = L.divIcon({
-                        className: 'destination-banner',
-                        html: `<b>Distance:</b> ${distance} km<br><b>Time:</b> ${hours} hrs ${minutes} mins`
-                    });
-                    dropoffMarker.bindTooltip(destinationBanner).openTooltip();
-
-                    const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                }
-            }
-
             return updateMap;
+        }
+
+        async function updateMap(inputId, lat, lon) {
+            const map = L.map('map').setView([lat, lon], 13);
+            if (inputId === 'pickupLocation') {
+                if (pickupMarker) {
+                    map.removeLayer(pickupMarker);
+                }
+                pickupMarker = L.marker([lat, lon]).addTo(map);
+                document.getElementById('pickupLocation').value = await getAddress(lat, lon);
+            } else if (inputId === 'dropoffLocation') {
+                if (dropoffMarker) {
+                    map.removeLayer(dropoffMarker);
+                }
+                dropoffMarker = L.marker([lat, lon]).addTo(map);
+                document.getElementById('dropoffLocation').value = await getAddress(lat, lon);
+            }
+            calculateRoute();
+        }
+
+        async function calculateRoute() {
+            if (pickupMarker && dropoffMarker) {
+                const pickupLatLng = pickupMarker.getLatLng();
+                const dropoffLatLng = dropoffMarker.getLatLng();
+                const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${pickupLatLng.lng},${pickupLatLng.lat};${dropoffLatLng.lng},${dropoffLatLng.lat}?overview=full&geometries=geojson`);
+                const data = await response.json();
+                const route = data.routes[0];
+
+                if (routePolyline) {
+                    map.removeLayer(routePolyline);
+                }
+
+                routePolyline = L.geoJSON(route.geometry).addTo(map);
+                const distance = (route.distance / 1000).toFixed(2);
+                const duration = route.duration;
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
+                document.getElementById('distanceTimeDetails').innerText = `Distance: ${distance} km, Duration: ${hours} hrs ${minutes} mins`;
+                document.getElementById('totalDistanceDetails').innerText = `Total Distance: ${distance} km`;
+
+                if (destinationBanner) {
+                    map.removeLayer(destinationBanner);
+                }
+                destinationBanner = L.divIcon({
+                    className: 'destination-banner',
+                    html: `<b>Distance:</b> ${distance} km<br><b>Time:</b> ${hours} hrs ${minutes} mins`
+                });
+                dropoffMarker.bindTooltip(destinationBanner).openTooltip();
+
+                const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
         }
 
         function updateAuthButtonToLogout() {
