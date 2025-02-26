@@ -1,10 +1,8 @@
+// Import necessary Firebase functions
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from "firebase/firestore"; // Import necessary functions
-
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 // Firebase configuration
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
   authDomain: "drivers-5e2b3.firebaseapp.com",
@@ -16,10 +14,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-document.getElementById('bookingForm').addEventListener('submit', function(event) {
+document.getElementById('bookingForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const bookingDetails = {
@@ -31,16 +29,11 @@ document.getElementById('bookingForm').addEventListener('submit', function(event
         userName: localStorage.getItem('userName')
     };
 
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+    try {
+        await addDoc(collection(db, 'bookings'), bookingDetails);
+        alert('Booking successful!');
+    } catch (error) {
+        console.error('Error adding document: ', error);
+        alert('Booking failed!');
     }
-
-    db.collection('bookings').add(bookingDetails)
-        .then(() => {
-            alert('Booking successful!');
-        })
-        .catch((error) => {
-            console.error('Error adding document: ', error);
-            alert('Booking failed!');
-        });
 });
