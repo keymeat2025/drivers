@@ -6,6 +6,7 @@
     <title>Book a Driver</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        /* Your existing styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -179,7 +180,7 @@
             border-radius: 4px;
             transform: translate(-50%, -100%);
             white-space: nowrap;
-        }
+        } 
     </style>
 </head>
 <body>
@@ -233,6 +234,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="store-booking.js"></script>
     <script>
         const LOCATIONIQ_API_KEY = 'pk.3ff92f87d4bd491b6a78884f21390cf7';
 
@@ -278,36 +280,6 @@
             }
 
             document.getElementById('bookNowButton').style.display = 'block';
-        });
-
-        document.getElementById('bookingForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const bookingDetails = {
-                pickupLocation: document.getElementById('pickupLocation').value,
-                dropoffLocation: document.getElementById('dropoffLocation').value,
-                date: document.getElementById('date').value,
-                time: document.getElementById('time').value,
-                carType: document.getElementById('carType').value,
-                userName: userName
-            };
-
-            fetch('https://api.example.com/bookings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(bookingDetails)
-            }).then(response => {
-                if (response.ok) {
-                    alert('Booking successful!');
-                } else {
-                    alert('Booking failed!');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Booking failed!');
-            });
         });
 
         function clearInput(id) {
@@ -501,55 +473,18 @@
 
             window.location.href ='index.html';
 
-
-
         }
 
-
-
-
-
-
-
         document.addEventListener('DOMContentLoaded', function() {
-
-
-
             if (userName) {
-
-
-
                 updateAuthButtonToLogout();
-
-
-
             } else {
-
-
-
                 document.getElementById('authButton').addEventListener('click', handleLogin);
-
-
-
             }
 
-
-
             initializeAutocomplete();
-
-
-
             updateMap = initializeMap();
-
-
-
         });
-
-
-
     </script>
-
-
-
-</
-
+</body>
+</html>
