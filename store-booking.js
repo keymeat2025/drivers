@@ -14,9 +14,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
+export { db };
 document.getElementById('bookingForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
