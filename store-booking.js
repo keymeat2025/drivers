@@ -14,12 +14,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-export { db };
 document.getElementById('bookingForm').addEventListener('submit', async function(event) {
     event.preventDefault();
+
+    console.log('Form submission event triggered');
 
     const bookingDetails = {
         pickupLocation: document.getElementById('pickupLocation').value,
@@ -30,8 +31,11 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         userName: localStorage.getItem('userName')
     };
 
+    console.log('Booking details:', bookingDetails);
+
     try {
-        await addDoc(collection(db, 'bookings'), bookingDetails);
+        const docRef = await addDoc(collection(db, 'bookings'), bookingDetails);
+        console.log('Document written with ID: ', docRef.id);
         alert('Booking successful!');
     } catch (error) {
         console.error('Error adding document: ', error);
