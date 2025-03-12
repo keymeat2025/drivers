@@ -1,6 +1,6 @@
 // Import necessary Firebase functions
  // { initializeApp } from "firebase/app";
- import { getFirestore, collection, addDoc } from "firebase/firestore";
+ //import { getFirestore, collection, addDoc } from "firebase/firestore";
  
  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
