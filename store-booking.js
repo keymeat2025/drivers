@@ -4,7 +4,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
+import { assignDrivers } from './assign-driver.js';
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAkLG-6Ze8TxKFt7gRnSbcxe1YY8tOhkpY",
@@ -47,7 +47,6 @@ document.getElementById('bookingForm').addEventListener('submit', async function
 
   // store-booking.js (after storing booking details)
 
-import { assignDrivers } from './assign-driver.js';
 
 document.getElementById('bookingForm').addEventListener('submit', async function(event) {
     event.preventDefault();
