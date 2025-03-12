@@ -44,4 +44,32 @@ document.getElementById('bookingForm').addEventListener('submit', async function
         console.error('Error adding document: ', error);
         alert('Booking failed!');
     }
+
+  // store-booking.js (after storing booking details)
+
+import { assignDrivers } from './assign-driver.js';
+
+document.getElementById('bookingForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const bookingDetails = {
+        pickupLocation: document.getElementById('pickupLocation').value,
+        dropoffLocation: document.getElementById('dropoffLocation').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        carType: document.getElementById('carType').value,
+        userName: localStorage.getItem('userName')
+    };
+
+    try {
+        const docRef = await addDoc(collection(db, 'bookings'), bookingDetails);
+        console.log('Document written with ID: ', docRef.id);
+        alert('Booking successful!');
+        
+        // Assign drivers to the trip
+        await assignDrivers(docRef.id, bookingDetails);
+    } catch (error) {
+        console.error('Error adding document: ', error);
+        alert('Booking failed!');
+    }
 });
