@@ -1,5 +1,3 @@
-// assign-driver.js
-
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 // Function to assign drivers to a trip
