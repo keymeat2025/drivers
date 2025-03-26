@@ -1,7 +1,5 @@
-// assign-driver.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,8 +16,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function assignDriver(pickupLatLng, dropoffLatLng, distance, userName) {
+// Mock function to send SMS
+function sendSMS(phoneNumber, message) {
+    console.log(`SMS sent to ${phoneNumber}: ${message}`);
+}
+
+export async function assignDriver(pickupLatLng, dropoffLatLng, distance, userName, userPhoneNumber, adminPhoneNumber) {
     const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
 
     // Check if the user is a car owner
     if (localStorage.getItem('userType') !== 'carowner') {
@@ -44,51 +48,60 @@ export async function assignDriver(pickupLatLng, dropoffLatLng, distance, userNa
     }
 
     try {
-        // Generate a booking ID and create a booking document
-        const bookingId = userName + '_' + Date.now();
-        const bookingRef = doc(db, "bookings", bookingId);
-        await setDoc(bookingRef, {
-            pickupLatLng: pickupLatLng,
-            dropoffLatLng: dropoffLatLng,
-            distance: distance,
-            userName: userName,
-            status: "pending"
+        await runTransaction(db, async (transaction) => {
+            // Generate a booking ID and create a booking document
+            const bookingId = userName + '_' + Date.now();
+            const bookingRef = doc(db, "bookings", bookingId);
+            transaction.set(bookingRef, {
+                pickupLatLng: pickupLatLng,
+                dropoffLatLng: dropoffLatLng,
+                distance: distance,
+                userName: userName,
+                status: "pending"
+            });
+
+            // Query to get available drivers
+            const q = query(collection(db, "drivers"), where("available", "==", true));
+            const querySnapshot = await getDocs(q);
+            const availableDrivers = [];
+            querySnapshot.forEach((driverDoc) => {
+                availableDrivers.push(driverDoc.id);
+            });
+
+            if (availableDrivers.length === 0) {
+                errorMessage.innerText = "No available drivers at the moment. We will inform you once a driver is available.";
+                sendSMS(userPhoneNumber, "No available drivers at the moment. We will inform you once a driver is available.");
+                sendSMS(adminPhoneNumber, "No available drivers at the moment.");
+                return;
+            }
+
+            // Assign the first available driver
+            const assignedDriverId = availableDrivers[0];
+            const driverRef = doc(db, "drivers", assignedDriverId);
+            transaction.update(driverRef, { available: false, currentBooking: bookingId });
+
+            // Update booking with assigned driver details
+            transaction.update(bookingRef, { driverId: assignedDriverId, status: "driver_assigned" });
+
+            // Record the scheduled list for tracking status
+            const scheduleRef = doc(db, "schedules", bookingId);
+            transaction.set(scheduleRef, {
+                bookingId: bookingId,
+                driverId: assignedDriverId,
+                status: "scheduled"
+            });
+
+            // Send confirmation messages
+            sendSMS(userPhoneNumber, "Your driver has been assigned.");
+            sendSMS(assignedDriverId, "You have been assigned a new booking.");
+            sendSMS(adminPhoneNumber, "A driver has been assigned to a new booking.");
+            
+            successMessage.innerText = `Driver ${assignedDriverId} has been assigned to your request.`;
+            console.log("Driver assigned and messages sent.");
         });
 
-        // Query to get available drivers
-        const q = query(collection(db, "drivers"), where("available", "==", true));
-        const querySnapshot = await getDocs(q);
-        const availableDrivers = [];
-        querySnapshot.forEach((driverDoc) => {
-            availableDrivers.push(driverDoc.id);
-        });
-
-        if (availableDrivers.length === 0) {
-            errorMessage.innerText = "No available drivers at the moment.";
-            return;
-        }
-
-        // Assign the first available driver
-        const assignedDriverId = availableDrivers[0];
-        const driverRef = doc(db, "drivers", assignedDriverId);
-        await updateDoc(driverRef, { available: false, currentBooking: bookingId });
-
-        // Update booking with assigned driver details
-        await updateDoc(bookingRef, { driverId: assignedDriverId, status: "driver_assigned" });
-
-        // Send confirmation messages (assuming you have a function sendMessage)
-        sendMessage(userName, "Your driver has been assigned.");
-        sendMessage("admin@example.com", "A driver has been assigned to a new booking.");
-
-        alert(`Driver ${assignedDriverId} has been assigned to your request.`);
-        console.log("Driver assigned and messages sent.");
     } catch (error) {
         console.error("Error booking driver:", error);
-        errorMessage.innerText = "Failed to book a driver. Please try again.";
+        errorMessage.innerText = error.message || "Failed to book a driver. Please try again.";
     }
-}
-
-// Mock function to send messages
-function sendMessage(recipient, message) {
-    console.log(`Message sent to ${recipient}: ${message}`);
 }
