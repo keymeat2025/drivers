@@ -44,14 +44,15 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             userType: userType,
         });
 
-        // If user is a driver, add to drivers collection
-        if (userType === 'driver') {
-            await setDoc(doc(db, "drivers", user.uid), {
-                userId: user.uid,
-                phone: phone,
-                available: true,
-            });
-        }
+        // Determine collection based on user type
+        const collectionName = userType === 'driver' ? 'drivers' : 'carowners';
+
+        // Store user data in the appropriate collection
+        await setDoc(doc(db, collectionName, user.uid), {
+            userId: user.uid,
+            phone: phone,
+            available: userType === 'driver' ? true : undefined, // 'available' field only for drivers
+        });
 
         alert('Registration successful!');
         // Redirect to login or home page
