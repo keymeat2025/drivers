@@ -39,20 +39,21 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
         const user = userCredential.user;
 
         // Add user details to Firestore
-        await setDoc(doc(db, "users", user.uid), {
+        const commonData = {
             phone: phone,
             userType: userType,
-        });
+        };
 
-        // Determine collection based on user type
-        const collectionName = userType === 'driver' ? 'drivers' : 'carowners';
-
-        // Store user data in the appropriate collection
-        await setDoc(doc(db, collectionName, user.uid), {
-            userId: user.uid,
-            phone: phone,
-            available: userType === 'driver' ? true : undefined, // 'available' field only for drivers
-        });
+        if (userType === 'driver') {
+            // Store user data in the 'drivers' collection
+            await setDoc(doc(db, "drivers", user.uid), {
+                ...commonData,
+                available: true, // 'available' field only for drivers
+            });
+        } else {
+            // Store user data in the 'carowners' collection
+            await setDoc(doc(db, "carowners", user.uid), commonData);
+        }
 
         alert('Registration successful!');
         // Redirect to login or home page
