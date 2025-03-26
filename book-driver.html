@@ -238,11 +238,11 @@
     <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.jS"></script>
     
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    
     <script type="module" src="store-booking.js"></script>
     <script type="module" src="assign-driver.js"></script>
     <script type="module">
         import { assignDriver } from './assign-driver.js';
+
         const LOCATIONIQ_API_KEY = 'pk.3ff92f87d4bd491b6a78884f21390cf7';
 
         const userName = localStorage.getItem('userName');
@@ -435,7 +435,7 @@
                 }
 
                 routePolyline = L.geoJSON(route.geometry).addTo(map);
-                const distance = (route.distance / 1000).toFixed(2);
+                const distance = (route.distance / 1000).toFixed(2); // Convert meters to kilometers
                 const duration = route.duration;
                 const hours = Math.floor(duration / 3600);
                 const minutes = Math.floor((duration % 3600) / 60);
@@ -453,6 +453,9 @@
 
                 const bounds = L.latLngBounds(pickupLatLng, dropoffLatLng);
                 map.fitBounds(bounds, { padding: [50, 50] });
+
+                // Call the assignDriver function to handle the driver assignment
+                await assignDriver(pickupLatLng, dropoffLatLng, distance, userName);
             }
         }
 
@@ -471,15 +474,10 @@
             localStorage.removeItem('userName');
             alert('Logged out successfully!');
             const authButton = document.getElementById('authButton');
-           
             authButton.textContent = 'Login';
-
             authButton.removeEventListener('click', handleLogout);
-
             authButton.addEventListener('click', handleLogin);
-
             window.location.href ='index.html';
-
         }
 
         document.addEventListener('DOMContentLoaded', function() {
